@@ -1,0 +1,239 @@
+<?php
+/******************************
+* hook_perm()
+* adding our one permission
+******************************/
+
+function sn_tvci_permission() {
+  return array(
+    'administer sn_tvci' => array(
+      'title' => t('Administer TVCI'),
+      'description' => t('Administer TV Companion Redirect.'),
+    ),
+  );
+}
+
+/* hook_form_id_alter() goes directly into splashify */
+function sn_tvci_form_splashify_admin_what_form_alter(&$form, &$form_state, $form_id) {
+  $form['livegame'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Live Game Settings'),
+  );
+  $form['livegame']['mode_value']['splashify_what_livegame_tvc_enabled'] = array(
+    '#type' => 'select',
+    '#title' => t('What redirect would you like for live games?'),
+    '#options' => array('enabled'=>t('TV Companion'),'tvci'=>t('Custom splash page'),'disabled'=>t('Ignore Live Game State')),
+    '#default_value' => variable_get('sn_tvci_enabled', ''),
+  );
+  
+  $form['livegame']['mode_value']['splashify_what_livegame_tvc_interstitial'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Enter the site path or URL of the page you’d like to redirect the visitor to during a live game.'),
+    '#size'=> 100,
+    '#default_value' => variable_get('sn_tvci_interstitial', ''),
+  );
+  
+  $form['livegame']['mode_value']['splashify_what_livegame_tvc_interstitial']['#states'] = array(
+   'visible' => array(
+     ':input[name="splashify_what_livegame_tvc_enabled"]' => array('value' => 'tvci'),
+    ),
+  );
+  
+  $form['#validate'][0] = 'sn_tvci_form_splashify_admin_what_form_validate_alter';
+  $form['#submit'][] = 'sn_tvci_form_splashify_admin_what_form_submit_alter';
+}
+
+
+function sn_tvci_form_splashify_admin_what_form_validate_alter($form, &$form_state) {
+  // If they entered paths, make sure the path values are valid.
+  GLOBAL $base_url;
+  $desktop_mode = $form_state['values']['splashify_what_desktop_mode'];
+  if ($desktop_mode == 'random' || $desktop_mode == 'sequence') {
+    if($form_state['values']['splashify_what_desktop_content'] !== '') {
+      splashify_what_paths_check('splashify_what_desktop_content', $form_state['values']['splashify_what_desktop_content']);
+    } else {
+      splashify_what_paths_check('splashify_what_desktop_content', $base_url);
+    }
+  }
+  
+  if($form_state['values']['splashify_what_livegame_tvc_enabled'] == 'tvci' && $form_state['values']['splashify_what_livegame_tvc_interstitial'] == '') {
+    splashify_what_paths_check('splashify_what_livegame_tvc_interstitial', $form_state['values']['splashify_what_livegame_tvc_interstitial']);
+  }
+  
+  if (isset($form_state['values']['splashify_what_mobile_mode'])) {
+    $mobile_mode = $form_state['values']['splashify_what_mobile_mode'];
+    if ($mobile_mode == 'random' || $mobile_mode == 'sequence') {
+      splashify_what_paths_check('splashify_what_mobile_content', $form_state['values']['splashify_what_mobile_content']);
+    }
+  }
+}
+
+function sn_tvci_form_splashify_admin_what_form_submit_alter($form, &$form_state){
+  if (isset($form_state['values']['splashify_what_livegame_tvc_enabled'])) {
+    variable_set('sn_tvci_enabled',$form_state['values']['splashify_what_livegame_tvc_enabled']);
+  }
+  if (isset($form_state['values']['splashify_what_livegame_tvc_interstitial'])) {
+    variable_set('sn_tvci_interstitial',$form_state['values']['splashify_what_livegame_tvc_interstitial']);
+  }
+  
+}
+
+function sn_tvci_form_splashify_admin_when_form_alter(&$form, &$form_state, $form_id) {
+  $form['livegame'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Live Game Settings'),
+  );
+  
+  $form['livegame']['mode_value']['splashify_when_livegame_breakpoint'] = array(
+    '#type' => 'textfield',
+    '#maxlength'=> 4,
+    '#size'=> 4,
+  	'#title' => t('Minimum screen width for TV Companion Redirect (in pixels)'),
+  	'#default_value' => variable_get('sn_tvci_breakpoint', '1200'),
+  	'#description' => t('The TV Companion is 990px wide. It looks best when viewed on a desktop, defined as 1200px or more. However, if you want to enable it for smaller screens including tablets, you may adjust this number down. We do not recommend going lower than 768px since the experience will be very poor for viewers on a phone.'),
+  );
+  $form['#submit'][] = 'sn_tvci_form_splashify_admin_when_form_submit_alter';
+}
+function sn_tvci_form_splashify_admin_when_form_submit_alter($form, &$form_state){
+  if (isset($form_state['values']['splashify_when_livegame_breakpoint'])) {
+    variable_set('sn_tvci_breakpoint',$form_state['values']['splashify_when_livegame_breakpoint']);
+  }
+
+}
+
+function sn_tvci_init() {
+  /* we do not want to do a drupal_goto in hook_init when called by drush */
+  if (function_exists('drush_main')) {
+    return;
+  }
+  $enabled = 1;//variable_get('sn_tvci_enable', 1);
+  if ( !$enabled ) { return; }
+
+	/********************************************************
+	* If this is the home page and the hp query string
+	* parameter is not set, we want to see if we need to 
+	* either redirect to the interstitial page, if we need 
+	* to redirect to the TVC, or do nothing.
+	* We only redirect if the call to the SSD Feed has the
+	* game_status set to '2'
+	********************************************************/
+	
+	if ((drupal_is_front_page() || drupal_get_path_alias(current_path()) == variable_get('site_frontpage', 'node')) && !isset($_GET['hp']) && !isset($_GET['sitewide_overrides_preview'])) {
+		_sn_tvci_display_interstitial();
+	}
+}
+
+function _sn_tvci_display_interstitial() {
+  //set today to be 4 hours behind. This will allow games that go past midnight to continue to use the same feed.
+  $today = date('Ymd',strtotime('-4 hours'));
+
+  global $SDI_ENV;
+  if($SDI_ENV == "PROD") {
+    $url = "http://dataurl.com/path/to/$today/feed.json";
+  } else {
+    $url = "http://datadevurl.com/path/to/$today/feed.json";
+  }
+  _sn_tvci_curl_body($url);
+}
+
+function _sn_tvci_curl_body($url) {
+  $ch = curl_init(); 
+  
+  curl_setopt($ch, CURLOPT_URL,            $url); 
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE); 
+  curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE); 
+  curl_setopt($ch, CURLOPT_NOBODY, false);
+  curl_setopt($ch, CURLOPT_HEADER, false);
+  curl_setopt($ch, CURLOPT_TIMEOUT,  variable_get('sn_tvci_headercall_timeout', 1));
+  $ret = curl_exec($ch);
+  $ret = json_decode($ret);
+  
+  // make sure we have games, otherwise we get error messages
+  if(is_object($ret->sports_content->games)) {
+    _sn_tvci_isgamelive($ret->sports_content->games->game);
+  }
+}
+
+function _sn_tvci_isgamelive($jsongames) {
+  GLOBAL $conf;
+  GLOBAL $SDI_ENV;
+
+  switch ($SDI_ENV) {
+    case 'PROD':
+      $tvc_env = 'http://www.nba.com/tvc/index.html?gamecode=';
+      break;
+    case 'INT':
+      $tvc_env = 'http://www.int.nba.com/tvc/index.html?gamecode=';
+      break;
+    case 'QA':
+      $tvc_env = 'http://www.qa.nba.com/tvc/index.html?gamecode=';
+      break;
+    case 'STAGE':
+      $tvc_env = 'http://www.stage.nba.com/tvc/index.html?gamecode=';
+      break;
+    default:
+      $tvc_env = 'http://www.int.nba.com/tvc/index.html?gamecode=';
+      break;
+  }
+  $team = $conf['TEAM']['ABBREV'];
+  $tvci = array(
+    'enabled' => variable_get('sn_tvci_enabled', 'enabled'),//if it's enabled + enabled by default
+    'game_status' => '',
+    'tvc_page' => '',
+    'interstitial' => variable_get('sn_tvci_interstitial',''),
+    'breakpoint' => variable_get('sn_tvci_breakpoint',1200)//breakpoint threshold
+  );
+  $visitor_team = false;
+  $home_team = false;
+  foreach($jsongames as $game) {
+    if( $game->visitor->team_key == $team ) { 
+      $visitor_team = true;
+    } else if ($game->home->team_key == $team ) {
+      $home_team = true;
+    }   
+    if( $visitor_team || $home_team) {
+      $tvci['tvc_page'] = $tvc_env . $game->game_url ."&brand=".$team;
+      $tvci['game_status'] = $game->period_time->game_status;
+      break;
+    }
+  }
+  /** TEAMOPS-5054: Since there aren't issues with how TVC Redirect is turned off, I am adding a check for the time and setting the game status (for JS) to 2 based on that time for games that haven't started. This will insure the Javascript portion works the same. **/
+  if ($tvci['game_status'] == 1) {
+  //home or visitor
+    if($home_team) {
+      $start_time = $game->home_start_time;
+    } else if($visitor_team) {
+      $start_time = $game->visitor_start_time;
+    }  
+  
+  //time right now
+    $now = date('Hi');
+    if($start_time <= $now) {
+      $tvci['game_status'] = 2;
+    }
+  }
+    
+  if ($tvci['game_status'] == 2) {
+    //write out JS object:
+    $inlinetvcijs =  "var tvci = {enabled:'".$tvci['enabled']."',
+      game_status:'".$tvci['game_status']."',
+      tvc_page:'".$tvci['tvc_page']."',
+      interstitial:'".$tvci['interstitial']."',
+      breakpoint:'".$tvci['breakpoint']."'}";
+    
+    drupal_add_js($inlinetvcijs,array('type'=>'inline','group'=>JS_LIBRARY));
+    $splash_display = TRUE;
+  }
+}
+
+/* hook_js_alter() will either add or replace splashify javascript file with sn_tvci js */
+function sn_tvci_js_alter(&$javascript) {
+  $splashifyjs = drupal_get_path('module', 'splashify') . '/js/splashify_init_min.js';
+  $jspath = drupal_get_path('module', 'sn_tvci') . "/js/sn_tvci.js";
+
+  if (isset($javascript[$splashifyjs])) {
+    $javascript[$splashifyjs]['data'] = $jspath;
+  } else {
+    drupal_add_js($jspath, array('scope' => 'header', 'weight' => -90, 'group' => JS_THEME, 'preprocess'=>FALSE));
+  }
+}

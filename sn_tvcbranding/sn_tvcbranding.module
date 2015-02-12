@@ -1,0 +1,521 @@
+<?php
+/**
+ * Implements hook_menu().
+ */
+function sn_tvcbranding_menu() {
+  $items = array();
+  $items['admin/structure/tvcbranding'] = array( //this creates a URL that will call this form at "examples/form-example"
+    'title' => 'TV Companion Branding', //page title
+    'description' => 'Configure TV Companion Branding',
+    'page callback' => 'drupal_get_form', //this is the function that will be called when the page is accessed.  for a form, use drupal_get_form
+    'page arguments' => array('sn_tvcbranding_form'), //put the name of the form here
+		'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('manage tvcbranding')
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function sn_tvcbranding_permission () {
+  return array(
+    'manage tvcbranding' => array(
+      'title' => t('Manage TVC Branding'),
+      'description' => t('Manage settings for TV Companion.'),
+    ),
+  );
+}
+
+/**
+ * Form builder for the TVC Companion Brandings form.
+ */
+function sn_tvcbranding_form($form, &$form_state) {
+  $form = array();
+  global $base_url;
+  global $conf;
+  global $SDI_ENV;
+  $teamname = $conf['TEAM']['CODE'];
+  $teamcode = $conf['TEAM']['ABBREV'];
+  $teamsfeed = simplexml_load_file('http://dataurl.com/path/to/teams.xml');
+  $teams = $teamsfeed->xpath("/teams/team");
+  $teamstack = $teamname;
+  $screens = drupal_map_assoc(array('stats','shotchart','playbyplay','boxscore','interact'));
+  $branding_options = variable_get('sn_tvcbranding_options',array());   //settings stored in variables table
+  $form['sn_tvcbranding_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Branding Options'),
+    '#collapsible' => FALSE,
+    '#tree' => TRUE,
+  );
+
+  $form['sn_tvcbranding_options']['use_js_ads'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use Javascript Ads'),
+    '#return_value' => 1,
+//    '#default_value' => isset($branding_options["use_js_ads"])?$branding_options["use_js_ads"]:0,
+    '#default_value' => isset($branding_options["use_js_ads"])?$branding_options["use_js_ads"]:1,
+    );
+  $form['sn_tvcbranding_options']['banners'] = array( /* Creates fake fieldset */
+    '#title' => t('Banner Ads'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $bannerlist = array(
+      array('id' => '728x90', 'title' => 'Main 728x90 banner'),
+      array('id' => 'Interstitial', 'title' => 'Interstitial'),
+      array('id' => 'pregame', 'title' => 'Pre Game'),
+      array('id' => 'halftime', 'title' => 'Half Time'),
+      array('id' => 'postgame', 'title' => 'Post Game'),
+      array('id' => 'interact', 'title' => 'Interact'),
+      array('id' => 'playbyplay', 'title' => 'Play By Play'),
+      array('id' => 'stats', 'title' => 'Stats'),
+      array('id' => 'scoreboard', 'title' => 'Score Board'),
+      array('id' => 'boxscore', 'title' => 'Box Score'),
+      array('id' => 'shotchart', 'title' => 'Shot Chart'),
+  );
+  foreach ($bannerlist as $banner) {
+    $bannerid = $banner['id'];
+    $form['sn_tvcbranding_options']['banners']["banner_code_$bannerid"] = array(
+      '#type' => 'textfield',
+      '#title' => t($banner['title']),
+      '#default_value' => isset($branding_options['banners']["banner_code_$bannerid"])?$branding_options['banners']["banner_code_$bannerid"]:'',
+    );
+  }
+
+  /* Create fieldset */
+  $form['sn_tvcbranding_options']['cil'] = array(
+    '#title' => t('Cover it Live'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['sn_tvcbranding_options']['cil']['cil_alt_cast_code'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Alt cast code'),
+    '#description' => t('Identifier to pass into the Cover It Live embed code. If Empty, the Cover It Live component will be hidden'),
+    '#default_value' => isset($branding_options['cil']["cil_alt_cast_code"])?$branding_options['cil']["cil_alt_cast_code"]:'',
+  );
+  $form['sn_tvcbranding_options']['cil']['cil_blurb'] = array(
+    '#type' => 'textarea',
+    '#rows' => 2,
+    '#title' => t('Blurb'),
+    '#default_value' => isset($branding_options['cil']["cil_blurb"])?$branding_options['cil']["cil_blurb"]:'',
+  );
+  $form['sn_tvcbranding_options']['cil']['gigya_iframe_src'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Gigya iframe source'),
+    '#default_value' => isset($branding_options['cil']["gigya_iframe_src"])?$branding_options['cil']["gigya_iframe_src"]:'',
+  );
+  
+  // Apply mass relevance form configuration.
+  $mr_settings['mr'] = array();
+  $default = '';
+  $names = array('use_mr','mr_iframe_source','mr_iframe_width','mr_iframe_height');
+  
+  foreach($names as $name) {
+   
+   if(strcmp('use_mr',$name) === 0) {
+     $default = 0;
+   } else {
+     $default = '';
+   }
+   
+   if(isset($form_state['values'],$form_state['values']['sn_tvcbranding_options']['mr'],$form_state['values']['sn_tvcbranding_options']['mr'][$name])) {
+     $mr_settings['mr'][$name] = $form_state['values']['sn_tvcbranding_options']['mr'][$name];
+   } else {
+     $mr_settings['mr'][$name] = isset($branding_options['mr'][$name])?$branding_options['mr'][$name]:$default;
+   }
+  }
+  
+  $use = $mr_settings['mr']['use_mr'];
+  
+  $form['sn_tvcbranding_options']['mr'] = array(
+   '#title' => t('Mass Relevance'),
+   '#type' => 'fieldset',
+   '#collapsible' => TRUE,
+   '#collapsed' => FALSE,
+  );
+  
+  $form['sn_tvcbranding_options']['mr']['use_mr'] = array(
+   '#type'=> 'checkbox',
+   '#title'=> t('Use Mass Relevance'),
+   '#return_value'=> 1,
+   /*
+   '#ahah'=> array(
+     'path'=> 'tvcbranding/use-mr/toggle',
+     'wrapper'=> 'mass-relevance-settings',
+     'method'=> 'replace',
+   ),
+   */
+   '#default_value'=> $use,
+  );
+  
+  $form['sn_tvcbranding_options']['mr']['mr_iframe_source'] = array(
+   '#type' => 'textfield',
+   '#title'=> t('Iframe Url'),
+   '#maxlength'=> 258,
+   '#element_validate'=> array('sn_tvcbranding_validate_mr_iframe_url'),
+   //'#parents'=> array('sn_tvcbranding_options','mr_iframe_source'),
+   '#default_value'=> $mr_settings['mr']['mr_iframe_source'],
+  );
+  $form['sn_tvcbranding_options']['mr']['mr_iframe_width'] = array(
+   '#type' => 'textfield',
+   '#title'=> t('Iframe Width'),
+   '#default_value'=> $mr_settings['mr']['mr_iframe_width'],
+   '#maxlength'=> 4,
+   '#size'=> 4,
+   '#element_validate'=> array('sn_tvcbranding_validate_mr_iframe_dimension'),
+   //'#parents'=> array('sn_tvcbranding_options','mr_iframe_width'),
+  );
+  $form['sn_tvcbranding_options']['mr']['mr_iframe_height'] = array(
+   '#type' => 'textfield',
+   '#title'=> t('Iframe Height'),
+   '#default_value'=> $mr_settings['mr']['mr_iframe_height'],
+   '#maxlength'=> 4,
+   '#size'=> 4,
+   '#element_validate'=> array('sn_tvcbranding_validate_mr_iframe_dimension'),
+   //'#parents'=> array('sn_tvcbranding_options','mr_iframe_height'),
+  );
+   
+  $form['sn_tvcbranding_options']['mr']['mr_iframe_source']['#states'] = array(
+   'visible' => array(
+     ':input[name="sn_tvcbranding_options[mr][use_mr]"]' => array('checked' => TRUE),
+    ),
+   'required' => array(
+     ':input[name="sn_tvcbranding_options[mr][use_mr]"]' => array('checked' => TRUE),
+   ),
+  );
+  $form['sn_tvcbranding_options']['mr']['mr_iframe_width']['#states'] = array(
+   'visible' => array(
+     ':input[name="sn_tvcbranding_options[mr][use_mr]"]' => array('checked' => TRUE),
+    ),
+   'required' => array(
+     ':input[name="sn_tvcbranding_options[mr][use_mr]"]' => array('checked' => TRUE),
+   ),
+  );
+  $form['sn_tvcbranding_options']['mr']['mr_iframe_height']['#states'] = array(
+   'visible' => array(
+     ':input[name="sn_tvcbranding_options[mr][use_mr]"]' => array('checked' => TRUE),
+    ),
+   'required' => array(
+     ':input[name="sn_tvcbranding_options[mr][use_mr]"]' => array('checked' => TRUE),
+   ),
+  );
+  /* end mass relevance */
+  
+  /* Create fieldset */
+  $form['sn_tvcbranding_options']['promo'] = array(
+    '#title' => t('Promo Header'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['sn_tvcbranding_options']['promo']['continue_link'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Promotional header link URL'),
+    '#default_value' => isset($branding_options['promo']["continue_link"])?$branding_options['promo']["continue_link"]:'',
+  );
+  $form['sn_tvcbranding_options']['promo']['continue_image'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Promotional header image'),
+    '#description' => t('20 pixels tall'),
+    '#default_value' => isset($branding_options['promo']["continue_image"])?$branding_options['promo']["continue_image"]:'',
+  );  
+  
+  /* Create  fieldset */
+  $form['sn_tvcbranding_options']['html'] = array(
+    '#title' => t('Preview HTML'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['sn_tvcbranding_options']['html']['html_preview'] = array(
+    '#type' => 'textfield',
+    '#description' => t('URL of HTML file to include on the pre-game screen'),
+    '#default_value' => isset($branding_options['html']["html_preview"])?$branding_options['html']["html_preview"]:'/frags/rssTemp/csl_'.$teamname.'.html',
+  );
+    
+  /* Create fieldset */
+  $form['sn_tvcbranding_options']['skinning_config'] = array(
+    '#title' => t('Skinning'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['sn_tvcbranding_options']['skinning_config']['page_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Page title'),
+    '#default_value' => isset($branding_options['skinning_config']["page_title"])?$branding_options['skinning_config']["page_title"]:ucfirst($teamname).' TV Companion',
+  );
+  $form['sn_tvcbranding_options']['skinning_config']['team_logo_area'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Team Logo'),
+    '#default_value' => isset($branding_options['skinning_config']["team_logo_area"])?$branding_options['skinning_config']["team_logo_area"]:'/tvc/image/assets/teamlogos/'.$teamcode.'.png',
+  );
+  $form['sn_tvcbranding_options']['skinning_config']['team_background'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Background image'),
+    '#default_value' => isset($branding_options['skinning_config']["team_background"])?$branding_options['skinning_config']["team_background"]:'',
+  );
+  $form['sn_tvcbranding_options']['skinning_config']['background_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Background color'),
+    '#maxlength' => 6,
+    '#description' => t('Hexidecimal color code (no #)'),
+    '#default_value' => isset($branding_options['skinning_config']["background_color"])?$branding_options['skinning_config']["background_color"]:'',
+  );
+  $form['sn_tvcbranding_options']['skinning_config']['screen'] = array(
+    '#type' => 'select',
+    '#title' => t('Default Screen View'),
+    '#default_value' => isset($branding_options['skinning_config']["screen"])?$branding_options['skinning_config']["screen"]:'',
+    '#options' => $screens,
+    '#description' => t('Choose a default tab for your TVC.'),
+  );
+
+  $form['sn_tvcbranding_options']['teamname'] = array (
+    '#type' => 'hidden',
+    '#value' => $teamname,
+  );
+  $form['sn_tvcbranding_options']['auto_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Auto Settings'),
+    '#description' => t('For reference only. Cannot be edited.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['sn_tvcbranding_options']['auto_settings']['teamname_show'] = array (
+    '#type' => 'item',
+    '#title' => t('Team Name'),
+    '#markup' => $teamname,
+  );
+  $form['sn_tvcbranding_options']['auto_settings']['teamcodes_show'] = array (
+    '#type' => 'item',
+    '#title' => t('Team Codes'),
+    '#markup' => '',
+  );
+  $form['sn_tvcbranding_options']['auto_settings']['teamnames_show'] = array (
+    '#type' => 'item',
+    '#title' => t('Team Names'),
+    '#markup' => $teamstack,
+  );
+  $form['sn_tvcbranding_options']['auto_settings']['filename_show'] = array (
+    '#type' => 'item',
+    '#title' => t('Settings File Name'),
+    '#markup' => $teamcode.'.js',
+  );
+  
+  $form = system_settings_form($form);
+  
+  /**
+   * Replace all submit handler with a custom one so that an error
+   * can be provided if the data fails to be uploaded to the server 
+   * via ftp. 
+   */ 
+   $form['#saved_submit_handlers'] = $form['#submit'];
+   $form['#submit'] = array('sn_tvcbranding_form_submit_override');   
+   
+   return $form;  
+}
+
+
+function sn_tvcbranding_form_validate($form, &$form_state) {
+}
+
+function sn_tvcbranding_form_submit($form, &$form_state) {
+  $sn_tvcbranding_options = array();
+  
+  
+  
+  
+  //variable_set('sn_tvcbranding_options',$sn_tvcbranding_options);
+}
+
+
+
+/*
+ * -----------------------------------------------------------------------------------------
+ * Form submit handlers
+ * -----------------------------------------------------------------------------------------
+ */ 
+
+/**
+ * Function that overrides standard settings submit handler so
+ * that proper error messages can be provided if data ftp upload
+ * fails. The normal handlers are than called after the upload succeeds.
+ * 
+ * @param array $form
+ *   The form build array.
+ * 
+ * @param array $form_state
+ *   The form_state array.
+ * 
+ * @return void
+ */ 
+function sn_tvcbranding_form_submit_override($form,&$form_state) {
+  
+  // Extract form values.
+  $banners = $form_state['values']['sn_tvcbranding_options']['banners'];
+  $cil = $form_state['values']['sn_tvcbranding_options']['cil'];
+  $mr = $form_state['values']['sn_tvcbranding_options']['mr'];
+  $promo = $form_state['values']['sn_tvcbranding_options']['promo'];
+  $html = $form_state['values']['sn_tvcbranding_options']['html'];
+  $skinning_config = $form_state['values']['sn_tvcbranding_options']['skinning_config'];
+  
+  $values = array();
+  $values = array('use_js_ads'=>$form_state['values']['sn_tvcbranding_options']['use_js_ads']);
+  $values = $values + $banners + $cil + $mr + $promo + $html + $skinning_config;
+  $values['teamname'] = $form_state['values']['sn_tvcbranding_options']['teamname'];
+  
+  try {
+    sn_tvcbranding_settings_save($values);
+  } catch(Exception $e) {
+    
+    // Log error to watchdog.
+    watchdog(
+      'sn_tvcbranding',
+      $e->getMessage(),
+      NULL,
+      WATCHDOG_ERROR
+    );
+    
+    // Provide message to end user.
+    drupal_set_message('Error occured that has prevented tvc settings from being saved. Please try again and if problem persists contact an admin.','error');
+    
+    return;
+  }
+  
+  // Run standard handlers.
+  foreach($form['#saved_submit_handlers'] as $function) {
+    if(function_exists($function)) {
+      $function($form, $form_state);
+    }
+  }
+  
+}
+
+/*
+ * ---------------------------------------------------------------------------------------------
+ * Form validation handlers
+ * ---------------------------------------------------------------------------------------------
+ */ 
+
+/**
+ * Element validate callback for Mass Relevance (mr) iframe
+ * width and height (dimension).
+ * 
+ * @param array $element
+ *   The form element being validated.
+ * 
+ * @param array $form_state
+ *   The complete return state.
+ * 
+ * @return void
+ */
+function sn_tvcbranding_validate_mr_iframe_dimension($element,&$form_state) {
+  
+  if($element['#value']) {
+    $value = (int) $element['#value'];
+    if($value === 0 || !is_int($value)) {
+      form_error($element,t('Mass Relevance field: "').$element['#title'].t('" must be a numeric value or left empty.'));
+    } 
+  }
+  
+}
+
+/**
+ * Element validate callback for Mass Relevance (mr) iframe url.
+ * 
+ * @param array $element
+ *   The form element being validated.
+ * 
+ * @param array $form_state
+ *   The complete return state.
+ * 
+ * @return void
+ */ 
+function sn_tvcbranding_validate_mr_iframe_url($element,&$form_state) {
+  
+  if($element['#value'] && !filter_var($element['#value'],FILTER_VALIDATE_URL)) {
+    form_error($element,t('Mass Relevance field: "').$element['#title'].t('" must be a valid URL.'));
+  }
+  
+}
+
+
+function sn_tvcbranding_settings_save($settings) {
+  global $conf;
+  global $SDI_ENV;
+  
+  $teamcode = $conf['TEAM']['ABBREV'];
+   
+  $filecontents = 'var brandConfig = '.json_encode($settings).';';
+  $filecontents = str_replace('\/','/',$filecontents);
+   
+  $filename = $teamcode.'.js';
+
+  drupal_set_message("TV Companion Branding settings have been saved." ,'status');
+
+  $tempfilename = $conf['file_temporary_path'].'/'.$filename;
+  $tempfile = file_unmanaged_save_data($filecontents,"temporary://$filename",FILE_EXISTS_REPLACE);
+  if (!$tempfile) {
+    throw new Exception('Could not write tempfile for data ftp upload');
+  }
+   
+  switch ($SDI_ENV) {
+    case 'DEV':
+    case 'INT':
+      $filename = 'INT-'.$filename;
+      $uploaded = sn_tvcbranding_ftp($tempfile,$filename,'ftp.server.com','uname','pass');
+      break;
+    case 'QA':
+      $filename = 'QA-'.$filename;
+      $uploaded = sn_tvcbranding_ftp($tempfile,$filename,'ftp.server.com','uname','pass');
+      break;
+    case 'PROD':
+      $uploaded = sn_tvcbranding_ftp($tempfile,$filename,'ftp.server.com','uname','pass');
+      break;
+    default:
+      $uploaded = FALSE;
+  }
+   
+  if(!$uploaded) {
+    throw new Exception('Could not upload settings via ftp to server.');
+  } 
+}
+
+function sn_tvcbranding_ftp($sourcefile,$destfile,$destserver,$user,$pass) {
+  // set up basic connection
+  $conn_id = ftp_connect($destserver);
+
+  // login with username and password
+  $login_result = ftp_login($conn_id, $user, $pass);
+
+  // can only be called after login
+  $ftp_setting = ftp_pasv($conn_id, true);
+
+  // check connection
+  if ((!$conn_id) || (!$login_result)) {
+    if (!$conn_id) {
+      throw new Exception("FTP connection to $destserver failed.");
+    } elseif (!$login_result) {
+      throw new Exception("FTP login to $destserver failed.");
+    }
+    ftp_close($conn_id);
+    return false;
+  }
+  // upload the file
+  $upload = ftp_put($conn_id, $destfile, $sourcefile, FTP_BINARY);
+
+  // check upload status
+  if (!$upload) {
+      throw new Exception("FTP transfer failed.");
+      ftp_close($conn_id);
+      return false;
+  }
+  // close the FTP stream
+  ftp_close($conn_id);
+  return true;
+}
+
