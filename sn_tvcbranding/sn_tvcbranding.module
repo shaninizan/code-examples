@@ -4,11 +4,11 @@
  */
 function sn_tvcbranding_menu() {
   $items = array();
-  $items['admin/structure/tvcbranding'] = array( //this creates a URL that will call this form at "examples/form-example"
-    'title' => 'TV Companion Branding', //page title
+  $items['admin/structure/tvcbranding'] = array(
+    'title' => 'TV Companion Branding', 
     'description' => 'Configure TV Companion Branding',
-    'page callback' => 'drupal_get_form', //this is the function that will be called when the page is accessed.  for a form, use drupal_get_form
-    'page arguments' => array('sn_tvcbranding_form'), //put the name of the form here
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('sn_tvcbranding_form'), 
 		'type' => MENU_NORMAL_ITEM,
     'access arguments' => array('manage tvcbranding')
   );
@@ -53,10 +53,9 @@ function sn_tvcbranding_form($form, &$form_state) {
     '#type' => 'checkbox',
     '#title' => t('Use Javascript Ads'),
     '#return_value' => 1,
-//    '#default_value' => isset($branding_options["use_js_ads"])?$branding_options["use_js_ads"]:0,
     '#default_value' => isset($branding_options["use_js_ads"])?$branding_options["use_js_ads"]:1,
     );
-  $form['sn_tvcbranding_options']['banners'] = array( /* Creates fake fieldset */
+  $form['sn_tvcbranding_options']['banners'] = array(
     '#title' => t('Banner Ads'),
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
@@ -142,13 +141,6 @@ function sn_tvcbranding_form($form, &$form_state) {
    '#type'=> 'checkbox',
    '#title'=> t('Use Mass Relevance'),
    '#return_value'=> 1,
-   /*
-   '#ahah'=> array(
-     'path'=> 'tvcbranding/use-mr/toggle',
-     'wrapper'=> 'mass-relevance-settings',
-     'method'=> 'replace',
-   ),
-   */
    '#default_value'=> $use,
   );
   
@@ -157,7 +149,6 @@ function sn_tvcbranding_form($form, &$form_state) {
    '#title'=> t('Iframe Url'),
    '#maxlength'=> 258,
    '#element_validate'=> array('sn_tvcbranding_validate_mr_iframe_url'),
-   //'#parents'=> array('sn_tvcbranding_options','mr_iframe_source'),
    '#default_value'=> $mr_settings['mr']['mr_iframe_source'],
   );
   $form['sn_tvcbranding_options']['mr']['mr_iframe_width'] = array(
@@ -167,7 +158,6 @@ function sn_tvcbranding_form($form, &$form_state) {
    '#maxlength'=> 4,
    '#size'=> 4,
    '#element_validate'=> array('sn_tvcbranding_validate_mr_iframe_dimension'),
-   //'#parents'=> array('sn_tvcbranding_options','mr_iframe_width'),
   );
   $form['sn_tvcbranding_options']['mr']['mr_iframe_height'] = array(
    '#type' => 'textfield',
@@ -176,7 +166,6 @@ function sn_tvcbranding_form($form, &$form_state) {
    '#maxlength'=> 4,
    '#size'=> 4,
    '#element_validate'=> array('sn_tvcbranding_validate_mr_iframe_dimension'),
-   //'#parents'=> array('sn_tvcbranding_options','mr_iframe_height'),
   );
    
   $form['sn_tvcbranding_options']['mr']['mr_iframe_source']['#states'] = array(
@@ -325,11 +314,7 @@ function sn_tvcbranding_form_validate($form, &$form_state) {
 
 function sn_tvcbranding_form_submit($form, &$form_state) {
   $sn_tvcbranding_options = array();
-  
-  
-  
-  
-  //variable_set('sn_tvcbranding_options',$sn_tvcbranding_options);
+
 }
 
 
