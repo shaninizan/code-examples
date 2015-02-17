@@ -1,0 +1,9 @@
+name = Search 
+description = Search Results 
+package = Etowah 
+core = 7.x
+dependencies[] = ctools
+dependencies[] = etowah_core
+scripts[] = js/libraries/typeahead.jquery.min.js
+scripts[] = js/libraries/fuse.min.js
+scripts[] = js/nbaSearch.typeahead.js

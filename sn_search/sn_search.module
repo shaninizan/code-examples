@@ -1,0 +1,110 @@
+<?php
+
+function etowah_search_ctools_plugin_directory($owner, $plugin_type) {
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/' . $plugin_type;
+  return;
+  }
+}
+
+/**
+ * Implementation of hook_ctools_plugin_api().
+ **/
+function etowah_search_ctools_plugin_api($module, $api) {
+    if ($module == 'page_manager' && $api == 'pages_default') {
+      return array('version' => 1);
+    }
+}/*/
+
+
+/**
+ *Implementation of hook_default_page_manager_pages().
+ **/
+function etowah_search_default_page_manager_pages() {
+  $pages = array();
+  $path = drupal_get_path('module', 'etowah_search') . '/pages';
+  $includes = drupal_system_listing('/.inc$/', $path, 'name', 0);
+  foreach($includes as $file) {
+    include_once "pages/" . $file->filename;
+    if(isset($page) && is_object($page)){
+      $pages[$page->name] = $page;
+    }else{
+    watchdog('etowah_search', "{$file->filename} loaded, but doesn't exist");
+    }
+  }
+  return $pages;
+}/*/
+
+
+/**
+ * Page callback for search.
+ */
+function search_results_page() {
+  global $conf;
+  global $SDI_ENV;
+  $module_path = drupal_get_path('module', 'etowah_search');
+  if ($SDI_ENV == 'PROD' || $SDI_ENV == 'STAGE') {
+    $search_url = 'http://searchapp2.nba.com/nba-search/query.jsp';
+  }
+  else {
+    $search_url = 'http://search-dev.nba.com/nba-search/query.jsp';
+  }
+  
+  $title = 'RESULTS FOR: ';
+
+  if (isset($_GET['query']) && $_GET['query']) {
+    $query = check_plain($_GET['query']);
+    $title .= '<span class="page-title__secondary">' . $query . '</span>';
+  }
+
+  drupal_add_js(array('search' => array(
+    'itemsPerPage' => 16, 
+    'url' => $search_url,
+    'query' =>$query
+  )),'setting');
+  drupal_add_js($module_path . '/js/nbaSearch.js');
+  drupal_add_js('jQuery(function() {
+    nbaSearch.doSearch("0",Drupal.settings.search.query,"all");
+  });','inline');
+  drupal_add_css($module_path . '/css/stylesheets/video_archive_screen.css');
+  drupal_add_css($module_path . '/css/stylesheets/channels-menu.css');
+
+  $section = <<<EOD
+<div id="video-list-header-wrapper">
+<section id="video-list-header">
+  <h1>$title</h1>
+</section>
+<section data-videoload="true" id="video-archive" class="video-archive video-playlist search-results-wrapper">
+</section>
+
+<div id='pagination'> </div>
+</div>
+
+<script id="search-results-template" type="text/x-handlebars-template">
+{{#each nodes}}
+  {{#if ad}}
+  <div class="col-xs-12 banner-ad--search__wrapper"><div id={{ad}} class="gpt_container banner-ad banner-ad--search" data-section=tag_archive data-pos-one=middle data-pos-two="" data-size-desktop_1024px=970x90 data-size-tablet_768px=728x90 data-size-tablet_640px=468x60 data-size-mobile_320px=320x50></div></div>
+  {{/if}}
+  {{#if id}}
+  <div id="result-{{hash}}" class="col-xs-12 col-tiny-6 col-sm-6 col-md-6 search-results">
+    {{#if metadata.media.thumbnail.url}}
+    <div class="content-image--search__wrapper">
+      <a class="icon-overlay icon-overlay--{{icon}} content-image__link-wrapper--search" data-id="{{id}}" href="{{id}}">
+        <img class="content-image content-image--search" src="{{metadata.media.thumbnail.url}}" alt="{{title}}" />
+      </a>
+    </div>
+    {{/if}}
+    <div class="post__information">
+      <a class="post__title" href="{{id}}" data-id="{{id}}" title="{{title}}">{{title}}</a>
+      <div class="post__date">{{date}}</div>
+      <div class="post__body">{{metadata.media.excerpt}}</div>
+    </div>
+  </div>
+  {{/if}}
+{{/each}}
+</script>
+
+EOD;
+
+  return $section;
+}

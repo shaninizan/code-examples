@@ -1,0 +1,313 @@
+<?php
+/**
+ * Implements hook_menu().
+ */
+function sn_podcast_menu() {
+  $items = array();
+  $items['admin/structure/podcast'] = array( 
+    'title' => 'Podcast',
+    'description' => 'Global podcast settings',
+    'page callback' => 'drupal_get_form', 
+    'page arguments' => array('sn_podcast_form'), 
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('manage podcast')
+  );
+  $items['itunes/feed'] = array( 
+    'title' => 'Podcast',
+    'description' => 'Global podcast settings',
+    'page callback' => '_sn_podcast_get_cached_feed',
+    'access callback' => TRUE
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function sn_podcast_permission () {
+  return array(
+    'manage podcast' => array(
+      'title' => t('Manage Podcast'),
+      'description' => t('Create and edit a podcast feed for iTunes syndication.'),
+    ),
+  );
+}
+
+/**
+ * Form builder for the podcast form.
+ */
+function sn_podcast_form($form, &$form_state) {
+  GLOBAL $base_url;
+  GLOBAL $conf;
+  drupal_set_message('Podcast can be accessed at <a href="'.$base_url.'/itunes/feed/rss.xml">'.$base_url.'/itunes/feed/rss.xml</a>','status');
+
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Title',
+    '#default_value' => (variable_get('sn_podcast_title', FALSE)),
+    '#size' => 100,
+    '#required' => TRUE
+  );
+  $form['description'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Description',
+    '#description' => t('Podcast description'),
+    //'#default_value' => ($this->options['description']),
+    '#default_value' => (variable_get('sn_podcast_description',FALSE)),
+    '#size' => 100,
+    '#required' => TRUE
+  );
+  $form['it_image']= array(
+    '#title' => t('Image url'),
+    '#type' => 'textfield',
+    '#description' => t('Use your CDN Dropbox to upload Podcast Artwork, and paste the url here. Per <a href="https://www.apple.com/itunes/podcasts/creatorfaq.html" target="blank">iTunes requirements</a>, the uploaded image should be 1400 X 1400 pixels and be either JPEG or PNG format.'),
+    '#default_value' => (variable_get('sn_podcast_it_image',FALSE)),
+
+    '#required' => TRUE
+  );
+  $form['it_category'] = array(
+    '#type' => 'hidden',
+    '#title' => 'Category',
+    '#value' => 'Sports &amp; Recreation',
+    '#size' => 100,
+    '#required' => TRUE
+  );
+  $form['it_author'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Author',
+    '#description' => t('Name(s) of Commentator(s) or other content contributors'),
+    '#default_value' => (variable_get('sn_podcast_it_author',FALSE)),
+    '#size' => 100,
+    '#required' => TRUE
+  );
+  $form['it_keywords'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Keywords',
+    '#description' => t('Comma separated list of keywords'),
+    '#default_value' => (variable_get('sn_podcast_it_keywords',FALSE)),
+    '#size' => 100,
+    '#required' => TRUE
+  );
+  $form['it_owner']= array(
+    '#type' => 'textfield',
+    '#title' => 'Owner',
+    '#description' => t('Optional. Email address for Podcast owner'),
+    '#default_value' => (variable_get('sn_podcast_it_owner',FALSE)),
+    '#size' => 100,
+    '#required' => FALSE
+  );
+  $form['it_link'] = array(
+    '#type' => 'hidden',
+    '#title' => 'iTunes Link',
+    '#value' => $base_url,
+    '#required' => TRUE
+  );
+  $form['atom_link'] = array(
+    '#type' => 'hidden',
+    '#title' => 'Atom Link',
+    '#value' => $base_url.'/itunes/feed/rss.xml',
+    '#required' => TRUE
+  );
+  $form['it_explicit'] = array(
+    '#type' => 'radios',
+    '#title' => 'Explicit Language',
+    '#options' => array('no' => t('No'), 'clean' => t('Clean'), 'Yes' => t('Yes')),
+    '#default_value' => (variable_get('sn_podcast_it_explicit',FALSE)),
+    '#required' => TRUE
+  );
+  $form['it_language']= array(
+    '#type' => 'hidden',
+    '#title' => 'Language',
+    '#value' => 'en',
+    '#required' => TRUE
+  );
+  
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+  
+  return $form;
+}
+
+function sn_podcast_form_validate($form, &$form_state) {
+}
+
+function sn_podcast_form_submit($form, &$form_state) {
+  variable_set('sn_podcast_title',$form['title']['#value']);
+  variable_set('sn_podcast_description',$form['description']['#value']);
+  variable_set('sn_podcast_it_image',$form['it_image']['#value']);
+  variable_set('sn_podcast_it_category',$form['it_category']['#value']);
+  variable_set('sn_podcast_it_author',$form['it_author']['#value']);
+  variable_set('sn_podcast_it_keywords',$form['it_keywords']['#value']);
+  variable_set('sn_podcast_it_owner',$form['it_owner']['#value']);
+  variable_set('sn_podcast_it_link',$form['it_link']['#value']);
+  variable_set('sn_podcast_atom_link',$form['atom_link']['#value']);
+  variable_set('sn_podcast_it_explicit',$form['it_explicit']['#value']);
+  variable_set('sn_podcast_it_language',$form['it_language']['#value']); 
+  
+  drupal_set_message('Podcast settings have been saved.','status');
+}
+
+/**
+ * This is the callback function that puts everything together to create the feed. 
+ * print() outputs the XML, and exit() prevents the HTML and the rest of the page from loading.
+**/
+
+function _sn_podcast_build() {
+  $entities = _sn_podcast_load_audio_files();
+  $items = _sn_podcast_parse_entities($entities);
+  $podcast = '<?xml version="1.0" encoding="utf-8" ?>
+  <rss version="2.0"  xmlns:atom="http://www.w3.org/2005/Atom" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:dc="http://purl.org/dc/elements/1.1/">';
+  $podcast .= _sn_podcast_format_channel_fields(implode("\r",$items));
+  $podcast .='</rss>';
+  return $podcast;
+}
+
+function _sn_podcast_load_audio_files() {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'file')
+        ->entityCondition('bundle', 'audio')
+        ->fieldOrderBy('field_audio_syndication','value','DESC')
+        ->range($lower_limit, 10);
+  $result = $query->execute();
+  $fids = array();
+  foreach($result['file'] as $value) {
+    $fids[] = $value->fid;
+  }
+  return $fids;
+}
+
+function _sn_podcast_parse_entities($fids){
+  $files = file_load_multiple($fids);
+  $itemsInfo = array();
+  foreach($files as $file) {
+    if($file->field_audio_syndication[LANGUAGE_NONE][0]['value'] == 1) {
+     $itemsInfo[] = _sn_podcast_parse_file($file);
+    }
+  }
+  return $itemsInfo;
+}
+
+function _sn_podcast_parse_file($file) {
+  $itunesItems = array();
+  $itunesItems['title'] = $file->field_audio_title[LANGUAGE_NONE][0]['value'];
+  $itunesItems['link'] = variable_get('sn_podcast_it_link');
+  $itunesItems['description'] = $file->field_audio_description[LANGUAGE_NONE][0]['value'];
+  $itunesItems['enclosure'] = array($file->field_audio_path[LANGUAGE_NONE][0]['value'],$file->filesize,$file->filemime);
+  $itunesItems['itunes:duration'] = $file->field_itunes_duration[LANGUAGE_NONE][0]['value'];
+  $itunesItems['itunes:summary'] = $file->field_itunes_summary[LANGUAGE_NONE][0]['value'];
+  $itunesItems['itunes:subtitle'] = $file->field_itunes_subtitle[LANGUAGE_NONE][0]['value'];
+  $itunesItems['itunes:explicit'] = $file->field_itunes_explicit[LANGUAGE_NONE][0]['value'];
+  $itunesItems['pubDate'] = date("D, d M Y H:i:s O", $file->timestamp);
+  $itunesItems['dc:creator'] = db_query("SELECT name FROM {users} WHERE uid = :uid LIMIT 1", array(":uid" => $file->uid))->fetchfield();
+  $itunesItems['guid'] = $file->uuid;
+ 
+  $itemsInfo = _sn_format_item_fields($itunesItems);
+  return $itemsInfo;
+}
+
+function _sn_format_item_fields($items) {
+  $itemsInfo = '<item>';
+  $itemsInfo .= _sn_podcast_format_xml_elements($items);
+  $itemsInfo .= '</item>';
+  
+  return $itemsInfo;
+}
+
+function _sn_podcast_format_channel_fields($items) {
+  $cTitle = variable_get('sn_podcast_title',FALSE);
+  $cDescription = variable_get('sn_podcast_description',FALSE);
+  $cCategory = variable_get('sn_podcast_it_category',FALSE);
+  $cAuthor = variable_get('sn_podcast_it_author',FALSE);
+  $cKeywords = variable_get('sn_podcast_it_keywords',FALSE);
+  $cOwner = variable_get('sn_podcast_it_owner',FALSE);
+  $cLink = variable_get('sn_podcast_it_link',FALSE);
+  $cAtomLink = variable_get('sn_podcast_atom_link',FALSE);
+  $cExplicit = variable_get('sn_podcast_it_explicit',FALSE);
+  $cLanguage = variable_get('sn_podcast_it_language',FALSE);
+  $cImage = variable_get('sn_podcast_it_image',FALSE);
+  
+  $args = array();
+  $args['itunes:category'] = $cCategory;
+  $args['itunes:author'] = $cAuthor;
+  $args['itunes:keywords'] = $cKeywords;
+  $args['itunes:owner'] = array('itunes:email'=>$cOwner); 
+  $args['itunes:explicit'] = 'no';
+  $args['itunes:image'] = $cImage;
+  $args['atom:link'] = $cAtomLink;
+
+  $channelInfo = _sn_podcast_format_rss_channel($cTitle, $cLink, $cDescription, $items, $cLangcode = NULL, $args);
+  return $channelInfo;
+}
+
+
+/**
+ * Restructure format_rss_channel
+**/
+function _sn_podcast_format_rss_channel($title, $link, $description, $items, $langcode = NULL, $args = array()) {
+  global $language_content;
+  $langcode = $langcode ? $langcode : $language_content->language;
+
+  $output = "<channel>\n";
+  $output .= ' <title>' . check_plain($title) . "</title>\n";
+  $output .= ' <link>' . check_url($link) . "</link>\n";
+
+  // The RSS 2.0 "spec" doesn't indicate HTML can be used in the description.
+  // We strip all HTML tags, but need to prevent double encoding from properly
+  // escaped source data (such as &amp becoming &amp;amp;).
+  $output .= ' <description>' . check_plain(decode_entities(strip_tags($description))) . "</description>\n";
+  $output .= ' <language>' . check_plain($langcode) . "</language>\n";
+  $output .= _sn_podcast_format_xml_elements($args);
+  $output .= $items;
+  $output .= "\n</channel>";
+
+  return $output;
+}
+
+/**
+ * Restructure format_xml_elements
+**/
+function _sn_podcast_format_xml_elements($array) {
+  $output = '';
+  foreach ($array as $key => $value) {
+    if ($key == "enclosure") {
+      $output .= '<'. $key .' url="' . $value[0] . '" length="' . $value[1] . '" type="' . $value[2] . '" />' . "\n";
+    }
+    else if ($key == "atom:link") {
+      $output .= '<'. $key . ' href="' . $value . '" rel="self" type="application/rss+xml" />' . "\n";
+    }
+    else if ($key == "itunes:image") {
+      $output .= '<' . $key . ' href="'. $value .'" />' . "\n";
+    }
+    else if ($key == "itunes:category") {
+      $output .= '<' . $key . ' text="'. $value .'" />' . "\n";
+    }
+    else if ($key == "guid") {
+      $output .= '<' . $key . ' isPermaLink="false">' . $value . ' at ' . variable_get('sn_podcast_it_link',FALSE) . '</guid>' . "\n";
+    }
+    else {
+      $output .= ' <' . $key . '>' . (is_array($value) ? format_xml_elements($value) : check_plain($value)) . "</$key>\n";
+    }
+  }
+  return $output;
+}
+
+/**
+ *
+ * This function is a variation of the one from sn_core. It automatically caches the iTunes Podcast feed for 5 minutes. As a bonus.
+ * If $cache_time is shorter than the previous use, it will recalculate the expiration.
+ *
+*/
+function _sn_podcast_get_cached_feed() {
+  $cache_time=300;
+  $cached = cache_get('sn_podcast','cache');
+  if ($cached && min(array($cached->expire,$cached->created+$cache_time)) > REQUEST_TIME) {
+    print $cached->data;
+  } else {
+    //generate a new podcast
+    $podcast = _sn_podcast_build();
+    cache_set('sn_podcast',$podcast, 'cache', REQUEST_TIME+$cache_time);
+    print $podcast;    
+  }
+}
