@@ -1,0 +1,230 @@
+div.boxes-sn-playlist {
+	margin-bottom: 10px;
+}
+
+.boxes-sn-playlist div.vidPlaylistThumbnails a.vidPlayerTextBlockLink,
+.boxes-sn-playlist div.vidPlaylistThumbnails a.vidPlayerTextBlockLink:link,
+.boxes-sn-playlist div.vidPlaylistThumbnails a.vidPlayerTextBlockLink:active,
+.boxes-sn-playlist div.vidPlaylistThumbnails a.vidPlayerTextBlockLink:visited {
+	display: block;
+}
+
+/** Styles for video playlist block where video is above a vertical playlist grid **/
+div.boxes-sn-playlist.list iframe {
+	margin: 0px auto 20px;
+	display: block;
+}
+.list .item-list ul li {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+  overflow: hidden;
+  display: inline-block;
+  width: 23%;
+  vertical-align: top;
+  margin-left: -1px;/*IE-8*/
+  margin-right: 1px;/*IE-8 fix for inline-block style*/
+}
+.boxes-sn-playlist.list .item-list ul li{
+  line-height: 14px;
+}
+.list .item-list ul li div.vidPlaylistThumbnails {
+	display: block;
+	margin: 0 5px 10px 5px; 
+	height: 165px;
+	overflow: hidden;
+}
+.list .item-list ul li div.vidPlaylistThumbnails a.vidPlayerBlockLink,
+.list .item-list ul li div.vidPlaylistThumbnails a.vidPlayerTextBlockLink {
+	float:left;
+	width: 100%;
+}
+
+/** Styles for video playlist block where video is above a carousel **/
+div.boxes-sn-playlist.carousel iframe {
+	margin: 0px auto;
+	display: block;
+}
+div.boxes-sn-playlist.carousel .jcarousel-skin-default .jcarousel-container-horizontal,
+div.boxes-sn-playlist.carousel .jcarousel-skin-default .jcarousel-item-horizontal {
+  height: 200px;
+}
+
+/** Widths for video playlist block with horizontal layout based on video player size and page layout  **/
+div.horizontal-list-right.video-size-large .item-list ul,
+div.horizontal-list-left.video-size-large .item-list ul {
+  height: 404px;
+  overflow-y: auto;
+}
+div.horizontal-list-right.video-size-medium .item-list ul,
+div.horizontal-list-left.video-size-medium .item-list ul {
+  height: 314px;
+  overflow-y: auto;
+}
+div.horizontal-list-right.video-size-small .item-list ul,
+div.horizontal-list-left.video-size-small .item-list ul {
+  height: 250px;
+  overflow-y: auto;
+}
+.field-theme-wide div.horizontal-list-right.video-size-large {
+	width: 360px;
+}
+.field-theme-wide div.horizontal-list-right.video-size-medium {
+	width: 520px;
+}
+.field-theme-wide div.horizontal-list-right.video-size-small {
+	width: 640px;
+}
+.field-theme-standard div.horizontal-list-right.video-size-medium {
+	width: 205px;
+}
+.field-theme-standard div.horizontal-list-right.video-size-small {
+	width: 320px;
+} 
+div.horizontal-list-right.video-size-medium .item-list ul li div.vidPlaylistThumbnails a.vidPlayerTextBlockLink,
+div.horizontal-list-left.video-size-medium .item-list ul li div.vidPlaylistThumbnails a.vidPlayerTextBlockLink {
+  min-width: 150px;
+}
+.field-theme-wide .main-group div.sidebar-video-list,
+.field-theme-standard .main-group div.sidebar-video-list {
+	float:left;
+	margin-bottom: 10px;
+}
+
+/** Styles for video playlist block where video left of horizontal playlist  **/
+div.horizontal_list_left {
+	width:auto;
+}
+div.horizontal_list_left iframe {
+	float:left;
+	margin-right: 10px;
+}
+div.horizontal_list_left iframe #description {
+	margin:0 10px 0 0;
+}
+div.horizontal-list-left .item-list ul{
+	margin:0;
+}
+div.horizontal-list-left .item-list ul li{
+	list-style: none outside none;
+	min-height:96px;
+	margin:0 0 10px;
+	width:100%;
+}
+div.horizontal-list-left .item-list ul li div.vidPlaylistThumbnails{
+	height:96px;
+	overflow:hidden;
+	line-height:16px;
+}
+.field-theme-standard div.horizontal-list-left.video-size-medium .item-list ul li div.vidPlaylistThumbnails{
+	height:auto;
+}
+div.horizontal-list-left .item-list ul li div.vidPlaylistThumbnails a{
+	float:left;
+}
+div.horizontal-list-left .item-list ul li div.vidPlaylistThumbnails a img{
+	margin: 0px 10px 0 0;
+}
+div.horizontal-list-left .item-list ul li div.vidPlaylistThumbnails a.vidPlayerTextBlockLink{
+	/*display:block;*/
+	width:auto;
+	float:none;
+}
+.field-theme-standard div.horizontal-list-left.video-size-medium .item-list ul li div.vidPlaylistThumbnails a{
+	width: 180px;
+}
+
+/** Styles for video playlist block where video is right of horizontal playlist **/
+div.horizontal_list_right {
+	width:auto;
+}
+div.horizontal_list_right iframe {
+	float:right;
+}
+div.horizontal-list-right .item-list ul{
+	margin:0;
+}
+div.horizontal-list-right .item-list ul li{
+	list-style: none outside none;
+	min-height:96px;
+	margin:0 0 10px;
+	width:100%;
+}
+div.horizontal-list-right .item-list ul li div.vidPlaylistThumbnails{
+	margin:0 10px 0 0;
+	height:96px;
+	overflow:hidden;
+	line-height:16px;
+}
+.field-theme-standard div.horizontal-list-right.video-size-medium .item-list ul li div.vidPlaylistThumbnails{
+	height:auto;
+}
+div.horizontal-list-right .item-list ul li div.vidPlaylistThumbnails a{
+	float:left;
+}
+div.horizontal-list-right .item-list ul li div.vidPlaylistThumbnails a img{
+	margin:3px 10px 0 0;
+}
+div.horizontal-list-right .item-list ul li div.vidPlaylistThumbnails a.vidPlayerTextBlockLink{
+	width:auto;
+	float:none;
+}
+.field-theme-standard div.horizontal-list-right.video-size-medium .item-list ul li div.vidPlaylistThumbnails a{
+	width: 165px;
+}
+
+/** Styles for video playlist block where video is above of horizontal playlist, designed to be placed in the sidebar **/
+div.boxes-sn-playlist.sidebar {
+	width:300px;
+}
+div.sidebar-video-list {
+	
+}
+div.sidebar-video-list .view-sn-playlist-block-playlist{
+	overflow:auto;
+}
+div.sidebar-video-list .item-list ul{
+	margin:0;
+	height: 240px;
+	overflow-y: scroll;
+}
+div.sidebar-video-list .item-list ul li{
+	list-style: none outside none;
+	float:left;
+	margin:0 0 10px;
+	width:100%;
+}
+div.sidebar-video-list .item-list ul li div.vidPlaylistThumbnails {
+	height: 65px;
+	margin: 5px 0;
+	overflow: hidden;
+}
+div.sidebar-video-list .item-list ul li div.vidPlaylistThumbnails a{
+/*	margin-top:-3px;*/
+	float:left;
+}
+div.sidebar-video-list .item-list ul li div.vidPlaylistThumbnails a img{
+	width:72px;
+	height:55px;
+	margin:3px 10px 0 0;
+}
+div.sidebar-video-list .item-list ul li div.vidPlaylistThumbnails a.vidPlayerTextBlockLink{
+	/*display:block;*/
+	width: 200px;
+}
+div.sidebar-video-list .view-sn-playlist-block-playlist{
+	overflow:auto;
+}
+div.sidebar-video-list .view-sn-playlist-block-playlist.video-size-small{
+	height:190px;
+}
+
+/**Styles for table display **/
+
+.view-video-playlist-taxonomy tbody{
+  vertical-align: top;
+}
+.view-video-playlist-taxonomy table div.vidPlaylistThumbnails {
+  width: 136px;
+}
+}

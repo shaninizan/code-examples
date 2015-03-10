@@ -1,0 +1,165 @@
+<?php
+
+/**
+ *  Implementation of hook_views_api().
+ */
+function sn_playlist_block_views_api() {
+  return array(
+    'api' => 2.0,
+  );
+}
+
+/**
+ *  Implementation of form_alter().
+ */
+function sn_playlist_block_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'admin_block_devel_form') {
+    $path = drupal_get_path('module', 'sn_playlist_block');
+  }
+
+}
+
+/**
+ * Implementation of hook_theme()
+ */
+function sn_playlist_block_theme($existing, $type, $theme, $path) {
+  return array(
+    'sn_playlist_block_iframe' => array(
+      'arguments' => array(
+        'iframe_dimensions' => NULL,
+        'player_dimensions' => NULL,
+        'view' => NULL,
+        'videoID_field' => 'node_node_data_field_gallery_videos_node_data_field_video_vms_video_id_field_video_vms_video_id_value',
+      /* See for options */
+      ),
+    ),
+  );
+}
+
+/**
+ * Controls the output dimensions and display of playlist Iframe
+ */
+function theme_sn_playlist_block_iframe($iframe_dimensions, $player_dimensions, $view, $videoID_field = 'node_node_data_field_gallery_videos_node_data_field_video_vms_video_id_field_video_vms_video_id_value'){
+  global $conf;
+  $team_name = strtolower($conf['team_name']);
+
+  $video_id = NULL;
+  $view_first_video = $view->result[0]->{$videoID_field};
+  $show_title = $view->result[0]->node_data_field_show_video_info_field_show_video_info_value;
+  if ($view_first_video) {
+    if (substr($view_first_video, 0, 7) !='/video/') {
+      $video_id = '/video/' . $view_first_video;
+    } else {
+      $video_id = $view_first_video;
+    }
+
+  }
+  // Note that 'name' must begin with snTeamPlaylistPlayer to prevent same-orgin-policy errors with some 
+  // forms that include Iframes as in order for the video-player to work document.domain is set to domainname.com
+  $output = '<iframe width="' .  $iframe_dimensions['width']  .  
+    '" scrolling="no" height="' .  ($show_title == 'true' ? $iframe_dimensions['height']: ($player_dimensions['height'])) . 
+    '" frameborder="0" src="http://www.domainname.com/video/player.html?videoID=' . $video_id  .  
+    '&width=' . $player_dimensions['width'] . '&height=' . $player_dimensions['height']  .  
+    '&context='. $team_name . '" name="Video Player' . $timestamp . '" id="PlaylistBlockPlayer-' . $view->name . '-' . $view->current_display  . 
+    '" class="video' .  $iframe_dimensions['height'] . 'x' . $iframe_dimensions['width'] . ' video snPlaylistBlockPlayer">SN video</iframe>';
+
+  return $output;  
+}
+
+/**
+ * Implementation of hook_ctools_plugin_api().
+ */
+function sn_playlist_block_ctools_plugin_api($module, $api) {
+  return array('version' => 1);
+}
+
+/**
+ * Implementation of hook_boxes_plugins().
+ */
+function sn_playlist_block_boxes_plugins() {
+  $info = array();
+  $path = drupal_get_path('module', 'sn_playlist_block') .'/plugins';
+  $info['sn_playlist_block'] = array(
+    'title' => 'Video Playlist box',
+    'handler' => array(
+      'parent' => 'box',
+      'class' => 'sn_playlist_block_box',
+      'file' => 'sn_playlist_block_box.inc',
+      'path' => $path,
+    )
+  );
+  return $info;
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function sn_playlist_block_menu() {
+  $items = array();
+  $items['sn_playlist_block/autocomplete'] = array(
+    'title' => 'SN Playlist Block autocomplete',
+    'page callback' => 'sn_playlist_block_autocomplete',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer blocks'),
+    'type' => MENU_CALLBACK
+  );
+  $items['sn_playlist_block/autocomplete/taxonomy'] = array(
+    'title' => 'SB Playlist Block Taxonomy Complete',
+    'page callback' => 'sn_playlist_taxonomy_autocomplete',
+    'access callback' => 'user_access',
+    'access arguments' => array('administer blocks'),
+    'type' => MENU_CALLBACK,
+   );
+  return $items;
+}
+
+/**
+ * Menu callback; Retrieve a pipe delimited string of autocomplete suggestions.
+ */
+function sn_playlist_block_autocomplete($string = '') {
+  $field = array(
+    'referenceable_types' => array(
+      'gallery_video' => 'gallery_video',
+    )
+  );
+  $references = _nodereference_potential_references_standard($field, $string);
+  $matches = array();
+  foreach ($references as $nid => $info) {
+    $matches[$info['title'] . ' [nid:' . $nid . ']'] = '<div class="reference-autocomplete">' . $info['rendered'] . '</div>';
+  }
+  drupal_json($matches);
+}
+
+function sn_playlist_taxonomy_autocomplete($string = '') {
+  // If the menu system has splitted the search text because of slashes, glue it back.
+  if (func_num_args() > 2) {
+    $args = func_get_args();
+    $string .= '/'. implode('/', array_slice($args, 2));
+  }
+
+  // The user enters a comma-separated list of tags. We only autocomplete the last tag.
+  $array = drupal_explode_tags($string);
+
+  // Fetch last tag
+  $last_string = trim(array_pop($array));
+  $matches = array();
+
+  $result = db_query_range(db_rewrite_sql("SELECT t.name FROM {term_data} t 
+    LEFT JOIN {term_synonym} s ON t.tid = s.tid 
+    WHERE (LOWER(t.name) LIKE LOWER('%%%s%%') OR  LOWER(s.name) LIKE LOWER('%%%s%%'))", 't', 'tid'),
+    $last_string, $last_string, 0, 10);
+
+  $prefix = count($array) ? '"'. implode('", "', $array) .'", ' : '';
+
+  while ($tag = db_fetch_object($result)) {
+    $n = $tag->name;
+    // Commas and quotes in terms are special cases, so encode 'em.
+    if (strpos($tag->name, ',') !== FALSE || strpos($tag->name, '"') !== FALSE) {
+      $n = '"'. str_replace('"', '""', $tag->name) .'"';
+    }
+    $matches[$prefix . $n] = check_plain($tag->name);
+  }
+
+
+  drupal_json($matches);
+}

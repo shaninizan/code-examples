@@ -1,0 +1,52 @@
+Index: views_sn_display_playlist_block.inc
+===================================================================
+--- views_sn_display_playlist_block.inc	(revision 4905)
++++ views_sn_display_playlist_block.inc	(working copy)
+@@ -66,6 +66,30 @@
+     }
+   }
+ 
++  function preview() {
++    // Add block specific js on a per call basis.
++    $module_path = drupal_get_path('module', 'sn_playlist_block');
++    drupal_add_js($module_path . '/js/snPlayListBlockInit.js', 'module');
++
++    // Prior to this being called, the $view should already be set to this
++    // display, and arguments should be set on the view.
++    $iframe_demensions = array(
++      'width' => $this->get_option('sn_playlist_iframe_width'),
++      'height' => $this->get_option('sn_playlist_iframe_height')
++      );
++    $player_demensions= array(
++      'width' => $this->get_option('sn_playlist_player_width'),
++      'height' => $this->get_option('sn_playlist_player_height')
++      );
++
++    $rendered = $this->view->render();
++    $executed_view = $this->view;
++    $info['content'] = theme('sn_playlist_block_iframe', $iframe_demensions, $player_demensions, $executed_view) . $rendered;
++    if (!empty($this->view->result) || $this->get_option('empty') || !empty($this->view->style_plugin->definition['even empty'])) {
++      return $info['content'];
++    }
++  }
++
+   /**
+    * Provide the default form for setting options.
+    */
+Index: js/snPlayListBlockInit.js
+===================================================================
+--- js/snPlayListBlockInit.js	(revision 4905)
++++ js/snPlayListBlockInit.js	(working copy)
+@@ -10,8 +10,10 @@
+ 	var domId = $(this).attr('id');
+ 
+ 	var vidId = 'video/' + domId.replace('imglink_', '').replace('txtlink_', '').replace(/^\/video\//i, '');
+-
+-  var snVideoBlockplayer = $(this).closest('.block.block-views').find('iframe.snPlaylistBlockPlayer');
++	var snVideoBlockplayer = $(this).closest('.block.block-views').find('iframe.snPlaylistBlockPlayer');
++  if(!$(snVideoBlockplayer[0]).is('iframe')){
++	var snVideoBlockplayer = $(this).closest('div.quicktabs_main').find('iframe.snPlaylistBlockPlayer');
++  }
+ 	try {
+ 		snVideoBlockplayer[0].contentWindow.playVideo(vidId, [vidId]);
+ 	} catch (e) {
