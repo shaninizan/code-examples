@@ -1,0 +1,139 @@
+/* Welcome to Compass.
+ * In this file you should write your main styles. (or centralize your imports)
+ * Import this file using the following HTML or equivalent:
+ * <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" /> */
+/* line 5, ../../../../../../../../Library/Ruby/Gems/2.0.0/gems/compass-core-1.0.3/stylesheets/compass/reset/_utilities.scss */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  font-size: 100%;
+  vertical-align: baseline;
+}
+
+/* line 22, ../../../../../../../../Library/Ruby/Gems/2.0.0/gems/compass-core-1.0.3/stylesheets/compass/reset/_utilities.scss */
+html {
+  line-height: 1;
+}
+
+/* line 24, ../../../../../../../../Library/Ruby/Gems/2.0.0/gems/compass-core-1.0.3/stylesheets/compass/reset/_utilities.scss */
+ol, ul {
+  list-style: none;
+}
+
+/* line 26, ../../../../../../../../Library/Ruby/Gems/2.0.0/gems/compass-core-1.0.3/stylesheets/compass/reset/_utilities.scss */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* line 28, ../../../../../../../../Library/Ruby/Gems/2.0.0/gems/compass-core-1.0.3/stylesheets/compass/reset/_utilities.scss */
+caption, th, td {
+  text-align: left;
+  font-weight: normal;
+  vertical-align: middle;
+}
+
+/* line 30, ../../../../../../../../Library/Ruby/Gems/2.0.0/gems/compass-core-1.0.3/stylesheets/compass/reset/_utilities.scss */
+q, blockquote {
+  quotes: none;
+}
+/* line 103, ../../../../../../../../Library/Ruby/Gems/2.0.0/gems/compass-core-1.0.3/stylesheets/compass/reset/_utilities.scss */
+q:before, q:after, blockquote:before, blockquote:after {
+  content: "";
+  content: none;
+}
+
+/* line 32, ../../../../../../../../Library/Ruby/Gems/2.0.0/gems/compass-core-1.0.3/stylesheets/compass/reset/_utilities.scss */
+a img {
+  border: none;
+}
+
+/* line 116, ../../../../../../../../Library/Ruby/Gems/2.0.0/gems/compass-core-1.0.3/stylesheets/compass/reset/_utilities.scss */
+article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section, summary {
+  display: block;
+}
+
+/** Breakpoints **/
+/** Mixins **/
+/* line 40, ../sass/screen.scss */
+section {
+  width: 100%;
+  padding: 5px;
+  margin: 5px;
+}
+@media (min-width: 1024px) {
+  /* line 40, ../sass/screen.scss */
+  section {
+    content: 'this is desktop';
+    width: 30%;
+    display: block;
+    float: left;
+    border: 1px dotted grey;
+  }
+}
+@media (min-width: 640px) and (max-width: 1024px) {
+  /* line 40, ../sass/screen.scss */
+  section {
+    content: 'this is tablet';
+    border: 1px dashed yellow;
+  }
+}
+@media (min-width: 320px) and (max-width: 639px) {
+  /* line 40, ../sass/screen.scss */
+  section {
+    content: 'this is a phone';
+    border: 2px solid pink;
+  }
+}
+
+/* line 61, ../sass/screen.scss */
+section:nth-child(1) {
+  background-image: -webkit-radial-gradient(0px 80px, closest-corner, #f49d54 0%, #fafdc5 100%) repeat scroll 0% 0% transparent;
+  background-image: radial-gradient(circle closest corner at left, #f49d54, #fafdc5);
+  background-image: radial-gradient(80px at 0, #f49d54 40px, #fafdc5 160px);
+}
+/* line 63, ../sass/screen.scss */
+section:nth-child(1) div#hurricane {
+  margin: 0px auto;
+  height: 180px;
+  width: 320px;
+  background-image: url(http://dsx.weather.com/util/image/w/68a62f4e-122e-4c72-91b2-ec9f5024e031.jpg?v=at&w=320&h=180&api=7db9fe61-7414-47b5-9871-e17d87b8b6a0);
+  display: block;
+  background-position: 25% 25%;
+}
+@media only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (min-resolution: 120dpi), only screen and (min-resolution: 1.3dppx) {
+  /* line 63, ../sass/screen.scss */
+  section:nth-child(1) div#hurricane {
+    background-image: url(http://dsx.weather.com/util/image/w/68a62f4e-122e-4c72-91b2-ec9f5024e031.jpg?api=7db9fe61-7414-47b5-9871-e17d87b8b6a0&h=598&w=640&v=at);
+    /*width: 640px;
+    height: 598px;*/
+  }
+}
+
+/* line 72, ../sass/screen.scss */
+section:nth-child(2) {
+  background-image: -webkit-radial-gradient(0px 50px, closest-corner, #f4470c 0%, #fafdc5 100%) repeat scroll 0% 0% transparent;
+  background-image: radial-gradient(circle closest corner at left, #f4470c, #fafdc5);
+  background-image: radial-gradient(50px at 0, #f4470c 25px, #fafdc5 100px);
+}
+
+/* line 75, ../sass/screen.scss */
+section:nth-child(3) {
+  background-image: -webkit-radial-gradient(0px 10px, closest-corner, #f4180c 0%, #fafdc5 100%) repeat scroll 0% 0% transparent;
+  background-image: radial-gradient(circle closest corner at left, #f4180c, #fafdc5);
+  background-image: radial-gradient(10px at 0, #f4180c 5px, #fafdc5 20px);
+}
