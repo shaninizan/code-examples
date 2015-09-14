@@ -2,14 +2,14 @@
 <html>
 <head>
 	<META http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
 	<link href="shaninizan-twc/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
 </head>
 <body>
-	<div>
+	<div ng-controller="shaninizan-twc-controller">		
 		<section>
-			<h1>Shani Nizan - TWC Interview Exercise</h1>
-			<!--img src="http://dsx.weather.com/util/image/w/68a62f4e-122e-4c72-91b2-ec9f5024e031.jpg?v=at&amp;w=320&amp;h=180&amp;api=7db9fe61-7414-47b5-9871-e17d87b8b6a0" alt="hurricane" /-->
-			<div id="hurricane">Eye see a hurricane!</div>
+			<h1>{{name}} - TWC Interview Exercise</h1>
+			<div id="hurricane"></div>
 		</section>
 		
 		<section>
@@ -21,6 +21,7 @@
 			<h2>Shankle sausage pancetta</h2>
 			<p>Short loin pork chop turducken ham hock swine ground round bresaola venison pig frankfurter cow meatloaf t-bone picanha brisket. Chicken alcatra chuck, andouille pork belly jowl ribeye.</p>
 		</section>
+		<div ng-include=" 'template.html' "></div>
 
 		<section>
 			<h2>Instructions</h2>
@@ -47,7 +48,21 @@
 					</li>
 				</ol>
 			</section>
-
+		<script type="text/ng-template" id="template.html">
+		  <button type="button" ng-click="invert()" id="goodnight">Good night!</button>
+		</script>
 		</div>
+<script>
+		var app = angular.module("shaninizan-twc-app", [])
+		.controller("shaninizan-twc-controller",function($scope) {
+			$scope.name = "Shani Nizan";
+			$scope.invert = function() {
+				document.body.className = 'invert';
+				document.getElementById('goodnight').style.visibility = "hidden";
+			}
+		})
+		angular.bootstrap(document, ['shaninizan-twc-app']);
+		
+</script>				
 </body>
 </html>
