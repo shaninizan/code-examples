@@ -21,7 +21,8 @@
 			<h2>Shankle sausage pancetta</h2>
 			<p>Short loin pork chop turducken ham hock swine ground round bresaola venison pig frankfurter cow meatloaf t-bone picanha brisket. Chicken alcatra chuck, andouille pork belly jowl ribeye.</p>
 		</section>
-		<div ng-include=" 'template.html' "></div>
+		<div invert id="directive">
+		</div>
 
 		<section>
 			<h2>Instructions</h2>
@@ -48,19 +49,35 @@
 					</li>
 				</ol>
 			</section>
-		<script type="text/ng-template" id="template.html">
-		  <button type="button" ng-click="invert()" id="goodnight">Good night!</button>
-		</script>
 		</div>
 <script>
 		var app = angular.module("shaninizan-twc-app", [])
 		.controller("shaninizan-twc-controller",function($scope) {
 			$scope.name = "Shani Nizan";
-			$scope.invert = function() {
+			$scope.invert = function(areafactory) {
 				document.body.className = 'invert';
 				document.getElementById('goodnight').style.visibility = "hidden";
 			}
 		})
+		.directive('invert',function(areafactory){
+			return {
+				template:  '<div id="directive-area"></div><button type="button" id="goodnight" ng-click="invert();">Good night!</button>',
+				link: function($scope){
+					$scope.area = areafactory.area;
+					document.getElementById('directive-area').innerHTML = $scope.area;
+				}
+			}
+		})
+		.factory('areafactory', function(){
+			var area = {};
+			var _width = document.getElementById('directive').offsetWidth;
+			var _height = document.getElementById('directive').offsetHeight;
+			area.calculate = function() {
+				var calculatedarea = _width * _height;
+				return calculatedarea;
+			}					
+			return {area: area.calculate()};
+		});
 		angular.bootstrap(document, ['shaninizan-twc-app']);
 		
 </script>				

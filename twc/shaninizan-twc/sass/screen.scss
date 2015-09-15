@@ -32,8 +32,6 @@ $phone : 320px 639px;
   background-image: image-url($filename);
   @include at-hdpi {
     background-image: image-url($filename-hdpi);
-		/*width: 640px;
-		height: 598px;*/
   }
 }
 
@@ -42,19 +40,9 @@ section {
 	padding: 5px;
 	margin: 5px;
 	@include breakpoint ($desktop) {
-		content: 'this is desktop';
 		width: 30%;
 		display: block;
 		float: left;
-		border: 1px dotted grey;
-	}
-	@include breakpoint ($tablet) {
-		content: 'this is tablet';
-		border: 1px dashed yellow;
-	}
-	@include breakpoint ($phone) {
-		content: 'this is a phone';
-		border: 2px solid pink
 	}
 }
 
@@ -67,6 +55,9 @@ section:nth-child(1){
 		@include hdpiswitch("http://dsx.weather.com/util/image/w/68a62f4e-122e-4c72-91b2-ec9f5024e031.jpg?v=at&w=320&h=180&api=7db9fe61-7414-47b5-9871-e17d87b8b6a0","http://dsx.weather.com/util/image/w/68a62f4e-122e-4c72-91b2-ec9f5024e031.jpg?api=7db9fe61-7414-47b5-9871-e17d87b8b6a0&h=598&w=640&v=at");
 		display: block;
 		background-position: 25% 25%;
+		.invert {
+			@include radialgradient(80px, #ccc);
+		}
 	}
 }
 section:nth-child(2){
@@ -74,4 +65,15 @@ section:nth-child(2){
 }
 section:nth-child(3){
 	@include radialgradient(10px, #f4180c);	
+}
+
+body.invert {
+	@include radialgradient(900px, #333);
+}
+#directive {
+	width: 200px;
+	height: 50px;
+	color: #333;
+	border: 1px solid #f49d54;
+	float: left;
 }
