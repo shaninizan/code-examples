@@ -1,0 +1,48 @@
+<!doctype html>
+
+<html>
+  <head>
+    <title>BANK</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="bank.css">
+    <script src="bank.js"></script>
+  </head>
+  <body>
+    <div id="content">
+      <div id="nav">
+        <div id="logo"><img src="backbase.jpg" /></div>
+        <div id="title">Bank of Backbase</div>
+      </div>
+      <!-- Across the board, stripped the redundant ids. One id per account, and then accessing and changing the data within the account based on the class or tag of the parent id-->
+      <div class="account">
+        <h2>Checking Account</h2>
+          <!-- 
+            naming convention: 
+              - "account" is the key to identify the click event as a valid target
+              - second spot is for the account type, in this case "checking", later it's "retirement". This could easily scale to add "savings", "credit", "moneymarket" etc
+              - third part is the index. This will allow for multiple checking accounts, such as a personal and business. From a design standpoint, a custom name for each account would be managed on the back end, with that value displayed in the <h2> above this comment
+              - Each piece is separated by an underscore so it's easily split in the javascript.
+           -->
+          <div id="account_checking_1">
+            <!-- Removed the dollar sign from the value of the balance and isolated the number in a span. This will allow me to not have to process a string in the javascript -->
+            <div class="balance">$<span>0</span></div>
+            <input class="amount" type="text" placeholder="enter an amount" />
+            <input class="deposit" type="button" value="Deposit" />
+            <input class="withdraw" type="button" value="Withdraw" />
+          </div>
+      </div>
+      <!-- Removed account-left and account-right classes since that is a bad naming convention. Restyled divs accordingly and made them responsive -->
+      <div class="account">
+        <h2>Retirement Account</h2>
+        <div id="account_retirement_2">
+          <div class="balance">$<span>0</span></div>
+          <input class="amount" type="text" placeholder="enter an amount" />
+          <input class="deposit" type="button" value="Deposit" />
+          <input class="withdraw" type="button" value="Withdraw" />
+        </div>
+      </div>
+      <div class="clear"></div>
+    </div>
+  </body>
+</html>
+
