@@ -77,34 +77,6 @@
         document.getElementById(Banking.account).getElementsByTagName("span")[0].innerHTML = Banking.balance;   
       }
     }
-
-  //how to deposit
-  /*
-    * get amount
-    * check for account type (checking vs retirement)
-    * do math
-  */
-  //how to withdraw
-  /*
-    * get amount
-    * compare amount to balance
-    * either do math or alert
-  */
-  //update display
-  /*
-    * this needn't be much different than it is today
-  */
-
-
-
-//  alert(document.getElementById('account_checking-1').getElementsByClassName('deposit'));
-  /*
-  $('#deposit1').click(depositAccount1);
-  $('#deposit2').click(depositAccount2);
-  $('#withdraw1').click(withdrawAccount1);
-  $('#withdraw2').click(withdrawAccount2);
-  */
- // updateDisplay();
   }
 
   Banking.init();
