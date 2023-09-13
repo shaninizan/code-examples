@@ -41,6 +41,7 @@ export function Input(props: InputProps) {
     <Label label={label} name={name}>
       <input
         aria-label={label}
+        id={name}
         name={name}
         onChange={handleChange}
         placeholder={placeholder}

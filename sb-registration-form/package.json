@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cypress": "cypress open"
   },
   "dependencies": {
     "@types/node": "20.6.0",
@@ -17,6 +18,10 @@
     "next": "13.4.19",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-password-checklist": "^1.4.3",
     "typescript": "5.2.2"
+  },
+  "devDependencies": {
+    "cypress": "^13.2.0"
   }
 }

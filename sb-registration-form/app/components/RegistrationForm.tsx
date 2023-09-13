@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import PasswordChecklist from 'react-password-checklist';
+
 import { Button } from '../library/Button';
 import { Input } from '../library/Input';
 import AddressForm from './AddressForm';
@@ -16,9 +18,10 @@ type registrationFormValues = {
   zip?: string;
 };
 
-const sendRegistration = (values: registrationFormValues) => {
-  // 👇 Send a fetch request to Backend API.
-  fetch('/api/registration', {
+async function sendRegistration(values: registrationFormValues) {
+  // NextJS acts as a proxy for POST API requests without CORS errors
+  // More info in this link: https://reacthustle.com/blog/nextjs-send-post-request-to-external-api
+  const res = await fetch('/api/registration', {
     method: 'POST',
     body: JSON.stringify({
       values,
@@ -26,8 +29,11 @@ const sendRegistration = (values: registrationFormValues) => {
     headers: {
       accept: 'application/json',
     },
-  }).catch((e) => console.log(e));
-};
+  });
+
+  const data = await res.json();
+  return data;
+}
 
 /**
  * Registration Form capturing email, password, first name, last name, and optional address fields: street, city, state, zip
@@ -36,6 +42,8 @@ export default function RegistrationForm() {
   const [emailPass, setEmailPass] = useState(false);
   const [validPass, setValidPass] = useState(false);
   const [enterAddress, setEnterAddress] = useState(false);
+
+  const [response, setResponse] = useState();
 
   const [emailValue, setEmailValue] = useState('');
   const [passwordValue, setPasswordValue] = useState('');
@@ -46,21 +54,24 @@ export default function RegistrationForm() {
   const [stateValue, setStateValue] = useState('');
   const [zipValue, setZipValue] = useState('');
 
+  /**
+   * @description Validates the password and enables the continue button
+   * @param e value of the password
+   */
   const validatePass = (e: string) => {
-    console.log(e, e.length);
-    //TODO validation
-    if (e.length > 3) setValidPass(true);
+    const hasNum = /[0-9]/g;
+    const hasChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/g;
+
+    if (e.length > 7 && e.match(hasNum) && e.match(hasChar)) setValidPass(true);
 
     setPasswordValue(e);
   };
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
     if (!emailPass) {
-      e.preventDefault();
       setEmailPass(true);
     } else {
-      // TODO will have to remove preventDefault
-      e.preventDefault();
       const values: registrationFormValues = {
         city: cityValue,
         email: emailValue,
@@ -71,10 +82,8 @@ export default function RegistrationForm() {
         street: streetValue,
         zip: zipValue,
       };
-      const test = sendRegistration(values);
-      console.log('form was submitted', test);
-
-      // todo feedback
+      const test = await sendRegistration(values);
+      setResponse(test.description);
     }
   };
 
@@ -95,6 +104,18 @@ export default function RegistrationForm() {
             onChange={(e) => validatePass(e)}
             type="password"
             value={passwordValue}
+          />
+          {/** This is a bonus; a React component with password feedback */}
+          <PasswordChecklist
+            rules={['minLength', 'number', 'specialChar']}
+            minLength={8}
+            value={passwordValue}
+            messages={{
+              minLength: 'The password must be 8 characters.',
+              number: 'The password must contain at least one number.',
+              specialChar:
+                'The password must contain at least one special character.',
+            }}
           />
           <Button text="Continue" disabled={!validPass} />
         </section>
@@ -134,6 +155,11 @@ export default function RegistrationForm() {
             />
           )}
           <Button text="Complete Registration" />
+          {response && (
+            <div>
+              <p>Response: {response}</p>
+            </div>
+          )}
         </section>
       )}
     </form>
