@@ -1,6 +1,7 @@
 {
   "name": "registration-form",
   "version": "0.1.0",
+  "author": "Shani Brown",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -22,6 +23,7 @@
     "typescript": "5.2.2"
   },
   "devDependencies": {
-    "cypress": "^13.2.0"
+    "cypress": "^13.2.0",
+    "@testing-library/cypress": "^10.0.1"
   }
 }

@@ -157,7 +157,9 @@ export default function RegistrationForm() {
           <Button text="Complete Registration" />
           {response && (
             <div>
-              <p>Response: {response}</p>
+              <p>
+                Response: <span>{response}</span>
+              </p>
             </div>
           )}
         </section>
