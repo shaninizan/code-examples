@@ -38,7 +38,7 @@ export function Input(props: InputProps) {
   };
 
   return (
-    <Label label={label} name={name}>
+    <Label label={label} name={name} required={required}>
       <input
         aria-label={label}
         id={name}

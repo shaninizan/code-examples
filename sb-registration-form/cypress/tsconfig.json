@@ -4,5 +4,5 @@
     "types": ["cypress", "@testing-library/cypress", "node"]
   },
   "extends": "../tsconfig.json",
-  "include": ["**/*.ts", "./src/app", "./cypress/support/index.d.ts"],
+  "include": ["**/*.ts", "./src/app", "./cypress/support/index.d.ts", "./src", "cypress.d.ts"],
 }

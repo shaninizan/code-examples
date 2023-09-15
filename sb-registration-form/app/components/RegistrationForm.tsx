@@ -136,7 +136,7 @@ export default function RegistrationForm() {
             value={lnameValue}
           />
           <Input
-            label="Enter Address (optional)"
+            label="Enter Address"
             name="address"
             onChange={() => setEnterAddress(!enterAddress)}
             required={false}

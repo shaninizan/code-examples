@@ -14,15 +14,13 @@ export default defineConfig({
     video: true,
   },
 
-  // component: {
-  //   devServer: {
-  //     framework: 'create-react-app',
-  //     bundler: 'webpack',
-  //   },
-  //   setupNodeEvents(on, config) {
-  //     require('@cypress/code-coverage/task')(on, config);
-
-  //     return config;
-  //   },
-  // },
+  component: {
+    devServer: {
+      framework: 'next',
+      bundler: 'webpack',
+    },
+    setupNodeEvents(on, config) {
+      return config;
+    },
+  },
 });
