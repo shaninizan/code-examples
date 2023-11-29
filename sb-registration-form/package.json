@@ -19,11 +19,11 @@
     "next": "13.4.19",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-password-checklist": "^1.4.3",
+    "react-password-checklist": "^1.5.0",
     "typescript": "5.2.2"
   },
   "devDependencies": {
-    "cypress": "^13.2.0",
-    "@testing-library/cypress": "^10.0.1"
+    "@testing-library/cypress": "^10.0.1",
+    "cypress": "^13.2.0"
   }
 }
