@@ -1,7 +1,0 @@
-name = SN TVC Branding
-description = Administration for TV Companion
-core = 7.x
-package = SN
-version = 7.x-1.0
-dependencies[] = text
-

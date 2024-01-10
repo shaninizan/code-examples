@@ -1,6 +1,0 @@
-core = 6.x
-dependencies[] = "sn_site"
-dependencies[] = views
-description = Creates a block with an embedded video player for videos
-name = SN Playlist Block
-package = Views
