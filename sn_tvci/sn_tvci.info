@@ -1,6 +1,0 @@
-name = TVC Interstitial
-description = Use Splashify to set live game redirect behavior to show splash page or go to the TV Companion page
-core = 7.x
-package = SN
-dependencies[] = splashify
-version = 7.x-1.0

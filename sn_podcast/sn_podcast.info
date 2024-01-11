@@ -1,8 +1,0 @@
-name = SN Podcast
-description = Create podcast for iTunes Syndication
-core = 7.x
-package = SN
-version = 7.x-1.0
-dependencies[] = text
-dependencies[] = sn_audio
-

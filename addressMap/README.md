@@ -20,8 +20,6 @@ Issues:
 
 
 Notes: 
-- What I've included here is the original AddressMap object and the handful of custom countries. It is from July 2010. Since that time, there have been extensions, and probably some changes as well, but the core is still the same.
-- See it in action: https://www.delta.com/profile/enrolllanding.action
-  * Change the country and watch the labels and required fields change.
-  * My favorites are Japan and Hong Kong
+- What I've included here is the original AddressMap object and the handful of custom countries. It is from July 2010. Since that time, there have been extensions, and probably some changes as well, but the core is still the same. I know it was scaled up to include international phone codes.
 - This code is used everywhere delta.com asks for an address, including every credit card transaction.
+- Added screenshots from 2023 showing different countries and their labels.
