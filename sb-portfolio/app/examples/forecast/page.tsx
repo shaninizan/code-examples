@@ -43,7 +43,7 @@ export default function Forecast() {
           onChange={() => setUnits(Units.Metric)}
         />
         <br />
-        <button onClick={() => getTemps()}>fetch weather data</button>
+        <button onClick={() => getTemps()}>Fetch Weather Data</button>
       </div>
       {temps && (
         <div>

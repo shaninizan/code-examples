@@ -7,13 +7,13 @@ export function SBRadio(props: InputFields) {
     <>
       <input
         defaultChecked={defaultChecked}
-        id={name}
+        id={name + '-' + value}
         name={name}
         onChange={onChange}
         type="radio"
         value={value}
       />{' '}
-      <label htmlFor={name}>{labelText}</label>
+      <label htmlFor={name + '-' + value}>{labelText}</label>
     </>
   );
 }

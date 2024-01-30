@@ -8,7 +8,6 @@ button {
   color: aliceblue;
   margin: 0.5em;
   padding: 0.5em 1em;
-  text-transform: capitalize;
 
   &:hover {
     background-color: #21bcac;
