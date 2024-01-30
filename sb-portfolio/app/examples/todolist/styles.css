@@ -1,0 +1,9 @@
+.todo {
+  &.completed {
+    text-decoration: line-through;
+    color: lightblue;
+  }
+  label {
+    text-indent: 1em;
+  }
+}

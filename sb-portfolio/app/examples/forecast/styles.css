@@ -1,0 +1,52 @@
+input {
+  background-color: #0a2949;
+}
+
+button {
+  background-color: #0a2949;
+  border-radius: 0.5em;
+  color: aliceblue;
+  margin: 0.5em;
+  padding: 0.5em 1em;
+
+  &:hover {
+    background-color: #21bcac;
+  }
+}
+
+h3 {
+  text-transform: capitalize;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+
+  .sbcard {
+    background-color: lightgrey;
+    border-radius: .25em;
+    border: 1px dashed #21bcac;
+    font-size: small;
+    margin: 0.5em;
+    padding: 0.5em;
+    text-align: center;
+    width: 12em;
+
+    img {
+      margin: 0px auto;
+    }
+
+    h4 {
+      color: #0a2949;
+      font-size: small;
+      font-weight: bold;
+      height: 7em;
+      margin-bottom: .25em;
+    }
+    h5 {
+      display: inline;
+      margin: 0.5em;
+    }
+  }
+}
