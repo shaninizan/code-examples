@@ -54,10 +54,7 @@ export class ResultComponent {
       }
     }
   }
-
-  // console.log('finNum', finNum);
-
+  
   finNum!: string;
-  finValue!: string; // TODO... is this needed, does it need to be defined: https://stackblitz.com/run?file=src%2Fapp%2Fhome%2Fhome.component.ts
-  // finNum: FinNum = { value: '555m' }; // TODO... is this needed, does it need to be defined: https://stackblitz.com/run?file=src%2Fapp%2Fhome%2Fhome.component.ts
+  finValue!: string;
 }
