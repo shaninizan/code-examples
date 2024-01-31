@@ -1,0 +1,32 @@
+.alert {
+  color: red;
+  border: 2px dashed red;
+  border-radius: .5em;
+  margin: 1em;
+
+  ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 1em 0;
+  }
+}
+
+button {
+  background-color: #326cf4;
+  border-radius: .5em;
+  color: #f3faff;
+  font-size: large;
+  margin-left: 2em;
+  padding: .5em 1em;
+
+  &:hover {
+    background-color: #1145BF;
+    cursor: pointer;
+  }
+
+  &:disabled {
+    background-color: #f3faff;
+    border-color: #999;
+    color: #999;
+  }
+}

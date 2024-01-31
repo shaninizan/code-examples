@@ -1,0 +1,5 @@
+.alert {
+  color: red;
+  border: 2px dashed red;
+  border-radius: .25em;
+}
