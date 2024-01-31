@@ -1,6 +1,6 @@
 # Shani Brown - Angular Routing
 
-The focus of this project was to create routes, validate input and pass data. In the first route, there was an input for a number with an abbreviation, and the second route displays the number with all its glorious places.
+The focus of this project was to create routes, validate input, and pass data. In the first route, there was an input for a number with an abbreviation, and the second route displays the number with all its glorious places.
 
 For my solution, I chose to send the original input as a query parameter to the second route where it got parsed then processed in a switch statement.
 
