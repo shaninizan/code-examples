@@ -1,0 +1,12 @@
+<form [formGroup]="finNumForm" (submit)="submitFinNum()">
+  <label for="finNum">Enter a number and letter abbreviation (eg. 1k for 1000):</label>&nbsp;
+  <input type="text" id="finNum" placeholder="Input a number" name="finNum" formControlName="finNum" />
+  <button class="primary" type="submit" [disabled]="!finNumForm.valid">Calculate</button>
+
+  <div *ngIf="finNumForm.invalid && (finNumForm.dirty || finNumForm.touched)" class="alert">
+    <ul>
+      <li *ngIf="finNumForm.invalid">Input should be numerals and optionally a single letter: B, G, K, M, or T.</li>
+    </ul>
+  </div>
+  <br/>
+</form>

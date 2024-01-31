@@ -1,5 +1,5 @@
 # code-examples
-A few snippets of past work
+A few snippets of past work and small projects
 
 Each directory includes a README with an explanation of the project and highlights of my contributions.
 
@@ -9,7 +9,10 @@ Areas of experience:
 - Cypress
 - React Testing Library
 - NextJS
+- Angular
+- Jasmine/Karma
 - User Interface Development
 - Javascript
-- CSS3 (and Compass)
+- JSS
+- CSS3
 - HTML5
